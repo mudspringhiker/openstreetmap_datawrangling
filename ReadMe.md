@@ -6,7 +6,9 @@ Austin, TX USA
 
 https://mapzen.com/data/metro-extracts/metro/austin_texas/
 
-This area is more familiar to me at the moment so I chose it. It also meets the project requirements of having at least 50 MB file size uncompressed.
+This area is more familiar to me at the moment so I chose it. It also meets the project requirements of having at least 50 MB file size uncompressed. As delineated in class, the data was obtained by downloading the readily available extract above. Uncompressing the file gave a 1.4 GB osm file. A sample of this file was generated using the code provided in the instructions for the project. The link to this smaller osm file is:
+
+https://www.dropbox.com/s/084lnztuwgxdgtm/sample.osm?dl=0
 
 ## Problems Encountered in the Map
 
@@ -20,6 +22,20 @@ Exploration of the sample osm file (obtained using the code provided in the inst
 6. City name format is not consistent (ex: Pflugerville, TX; Pflugerville)
 
 ### Cleaning of Street Names
+
+Using the method described in the case study exercises for the course, street names were audited using the following code where "expected" is a list of commonly found names in street names:
+
+
+    import re
+    street_type_re = re.compile(r'\b\S+\.?$', re.IGNORECASE)
+    
+    def audit_street_type(street_types, street_name):
+        if m:
+            street_type = m.group()
+            if street_type not in expected:
+                street_types[street_type].add(street_name)
+            
+       
 
 Aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping" dictionary (discussed below). In the process of auditing and coming up with functions to clean street names, I found it easier to create separate functions to fix different problems. The final function uses subfunctions that will be described below.
 
@@ -206,21 +222,22 @@ Another approach to the two phone numbers entered in the field would be using th
 
 ### Cleaning the City Names
 
-Auditing and cleaning the city names follow a similar method as auditing and cleaning the street names. A list of expected cities was created and any city not found in this list is printed during auditing:
+Auditing and cleaning the city names follow a similar method as auditing and cleaning the street names. A list of expected cities was created and any city not found in this list was added to a set that should contain city names that need to be updated:
 
     def is_city(element):
         return element.attrib['k'] == "addr:city"
         
     cities = set()
 
-    for element in get_element(OSM_FILE):
+    for element in get_element(SAMPLE_FILE):
         if element.tag == "node" or element.tag == "way":
             for tag in element.iter("tag"):
                 if is_city(tag):
                     if tag.attrib['v'] not in expectedcities:
                         cities.add(tag.attrib['v'])
 
-Running this code on the whole osm file returned only a few lines. Therefore, creating a dictionary similar to that used in cleaning the street names was done. The function, "update_city" involved only a few lines:
+
+I found that running this code on the whole osm file returned only a few lines. Creating a dictionary similar to that used in cleaning the street names was done. The function, "update_city" involved only a few lines:
 
     def update_city(city, expectedcities, mapping_city):
         if city not in expectedcities:
@@ -247,7 +264,7 @@ Instead of using all the functions above individually in the final xml data extr
         
 ## Extraction of Data from OSM File to CSV Files
 
-Data were extracted from the OSM file using the functions provided by the course, and a function, "shape_element" which not only parses the osm xml data but also cleans the data using the functions discussed above. However, the whole program was tried first on a sample of the osm file, which was also created using a provided Python program. The link to this smaller osm file is here: https://www.dropbox.com/s/6xmlte2z3mkr1ed/austin_texas.osm?dl=0.
+Data were extracted from the OSM file using the functions provided by the course, and a function, "shape_element" which not only parses the osm xml data but also cleans the data using the functions discussed above. However, the whole program was tried first on a sample of the osm file, which was also created using a provided Python program. 
 
 Parsing the osm xml file was done using the iterparse method and the xml.etree.cElementTree module (instead of the xml.etree.ElementTree) which parses faster using lower memory compared to the ElementTree module (http://effbot.org/zone/celementtree.htm). The iterparse allows for iterative parsing (parsing one tag at a time) instead of parsing the whole tree at once before doing something, which is intuitively slower (https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075461/lessons/5436095827/concepts/54475500150923#, http://effbot.org/zone/element-iterparse.htm). 
 
