@@ -555,7 +555,13 @@ Lastly, querrying the database for the most popular cuisines was done. Pandas wa
 
 ## File Sizes
 
-
+    austin_texas.osm        1.41 GB
+    atx_osm.db              820.4 MB
+    nodes.csv               604.3 MB
+    nodes_tags.csv          11.7 MB
+    ways.csv                48.6 MB
+    ways_tags.csv           70.6 MB
+    ways_nodes.csv          175.6 MB
 
 ## Conclusion
 
