@@ -553,3 +553,21 @@ Lastly, querrying the database for the most popular cuisines was done. Pandas wa
 
 ![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot2.png)
 
+## File Sizes
+
+
+
+## Conclusion
+
+Information from an xml file can be scraped for data by Python through the xml.eTree.ElementTree module. This can be converted to a csv file which can be converted to an sql database (or to a pandas dataframe, which is not shown here, but was explored in another unit of the course). SQL databases can be converted to a pandas dataframe.
+
+Cleaning of data takes a while. Knowledge of the nature of data also is very important so the best decisions on what to do with it can be done.
+
+## Other References
+
+Automate the Boring Stuff with Python: Practical Programming for Total Beginners, A. Sweighart, No Starch Press San Francisco, CA, USA ©2015 ISBN:1593275994 9781593275990
+http://stackoverflow.com/questions/19877344/near-syntax-error-when-trying-to-create-a-table-with-a-foreign-key-in-sqlit
+Brandon Rhodes - Pandas From The Ground Up - PyCon 2015, https://www.youtube.com/watch?v=5JnMutdy6Fw
+Udacity Data Wrangling Course
+(https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075460/lessons/491558559/concepts/816599080
+
