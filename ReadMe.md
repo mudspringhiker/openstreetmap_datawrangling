@@ -269,7 +269,7 @@ Instead of using all the functions above individually in the final xml data extr
 
 Data were extracted from the OSM file using the functions from the case study exercises from the course. However, we were guided to write the "shape_element" function which not only parses the osm xml data but also cleans the data using the functions discussed above. The general scheme for processing osm files start from creating csv files as output files using the codecs module, then shaping the output, validating this output against a set schema and then writing the output onto the csv files.
 
-*### The shape_element function*
+#### *The shape_element function*
 
 Parsing and cleaning of xml data occurs in the shape_element function. It extracts values of attributes from an xml element, instead of a whole xml tree (http://effbot.org/zone/celementtree.htm, http://effbot.org/zone/element-iterparse.htm, https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075461/lessons/5436095827/concepts/54475500150923#). Along with this extraction, the data is updated accordingly and appended to receptacles (lists and dictionaries). 
 
