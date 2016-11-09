@@ -514,9 +514,39 @@ I explored the use of pandas to look at the list of users:
     del contributions_df[1]
     contributions_df.head(10)
 
-This created a better looking table than the results of the sql querry (please see https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/austin/p3_wrangle_openstreetmap_4_querying_atxosm.ipynb)
+This created a better looking table than the results of the sql query:
 
 ![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandastable1.png)
+
+### Locations of Restaurants
+
+The query used to obtain a list of all the restaurants in the Austin, TX area was:
+    
+    cuisine_loc = cur.execute("""SELECT b.id, b.value, nodes.lat, nodes.lon 
+                                 FROM (SELECT * FROM nodes_tags UNION ALL SELECT * FROM ways_tags) b
+                                   JOIN nodes ON b.id = nodes.id 
+                                 WHERE b.key = 'cuisine'""").fetchall()
+                                 
+Obtaining the locations of the coffee shops will then have a similar code:
+    
+    coffee_loc = cur.execute("""SELECT b.id, b.value, nodes.lat, nodes.lon 
+                                FROM (SELECT * FROM nodes_tags UNION ALL SELECT * FROM ways_tags) b
+                                  JOIN nodes ON b.id = nodes.id 
+                                WHERE b.value = 'coffee_shop'""").fetchall()
+
+Plotting the locations of these restaurants vs. the locations of coffee shops can then be done:
+
+    import matplotlib.pyplot as plt
+    import seaborn
+    % matplotlib inline (only if using notebook)
+    plt.scatter([x[2] for x in cuisine_loc], [y[3] for y in cuisine_loc], c='blue', label="restaurant")
+    plt.scatter([x[2] for x in coffee_loc], [y[3] for y in coffee_loc], c='red', label="coffee shop")
+    plt.xlabel('Latitude')
+    plt.ylabel('Longtitude')
+    plt.title('Restaurants, Coffee Shops')
+    plt.legend(loc=2)
+
+![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot1.png)
 
 Lastly, querrying the database for the most popular cuisines was done. Pandas was used to eventually plot the distribution of the different types of restaurants in the Austin, TX area. It is no surprise that the area has a lot of Mexican restaurants.
 
