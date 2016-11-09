@@ -120,7 +120,7 @@ In fixing common problems such as spellling out the full street names in abbrevi
 
 This problem was addressed by adding some lines to the "update_name" function, which was used in the case study exercises. In the case study, the "update_name" function uses a dictionary ("mapping") of abbreviated to unabbreviated pairs of street names to update the street names. elif statements were used. In the "update_name" function below, lines of code were added to address the problems above. "St" for "Saint" was updated first before "St" for "Street". "N", "C", "I" and "H" were also attended to first before mapping them to the "mapping" dictionary. The other functions "update_farm_ranch_to_market" and "append_highway" were added towards the last part of the function, after the "unabbreviations".
 
-    def update_name(name, mapping):
+    def update_name(name, mapping_street):
         parts = name.split()
         newparts = []
         for item in parts:
