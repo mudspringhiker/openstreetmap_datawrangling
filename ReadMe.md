@@ -23,21 +23,25 @@ Exploration of the sample osm file (obtained using the code provided in the inst
 
 ### Cleaning of Street Names
 
-Using the method described in the case study exercises for the course, street names were audited using the following code where "expected" is a list of commonly found names in street names:
+Using the method described in the case study exercises for the course, street names were audited using a regex and if street names don't follow that regex they get added to a dictionary of type set which makes sure that if the street name is already present, it won't get added to the dictionary. In the auditing function, the iterparse method is used to iterate through the xml tree.
 
-
-    import re
-    street_type_re = re.compile(r'\b\S+\.?$', re.IGNORECASE)
-    
-    def audit_street_type(street_types, street_name):
-        if m:
-            street_type = m.group()
-            if street_type not in expected:
-                street_types[street_type].add(street_name)
-            
+    def is_street_name(elem):
+        return (elem.attrib['k'] == 'addr:street')
+        
+    def audit(osmfile):
+        osm_file = open(osmfile, 'r')
+        street_types = defaultdict(set)
+        for event, elem in ET.iterparse(osm_file, events=("start",)):
+            if elem.tag == "node" or elem.tag == "way":
+                for tag in elem.iter("tag"):
+                    if is_street_name(tag):
+                        audit_street_type(street_types, tag.attrib['v'])
+        osm_file.close()
+        return street_types
        
+The result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping" dictionary (discussed below). 
 
-Aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping" dictionary (discussed below). In the process of auditing and coming up with functions to clean street names, I found it easier to create separate functions to fix different problems. The final function uses subfunctions that will be described below.
+In the process of auditing and coming up with functions to clean street names, I found it easier to create separate functions to fix different problems. The final function uses subfunctions that will be described below.
 
 In updating Farm-to-Market (and Road-to-Market) Roads, the challenge was to make it possible to update the following:
 - FM / RM
@@ -146,7 +150,7 @@ This problem was addressed by adding some lines to the "update_name" function, w
 
 Another area to update is the postal codes which do not follow a uniform format. Most of the postcodes do not include the county codes. I decided to remove the county codes. But if a total cleaning is needed, a new field for county codes should be created in order to not lose the county codes data. This wasn't done here (however, it might be easily fixable if MongoDB was used--I used SQL).
 
-To audit the postcodes, a regex of the form r'^7\d\d\d\d$' (must have five digits which must start with "7" and must end with a digit, hence the caret at the beginning and a dollar sign at the end) was used to exclude any entries following the 5-digit postcode format. Anything not following this format can be printed off and examined to see how they can be updated:
+To audit the postcodes, a regex of the form r'^7\d\d\d\d$' (must have five digits which must start with "7" and must end with a digit, hence the caret at the beginning and a dollar sign at the end) was used to exclude any entries following the 5-digit postcode format. Anything not following this format can be printed off and examined to see how they can be updated.
 
     import re
 
@@ -166,7 +170,7 @@ To audit the postcodes, a regex of the form r'^7\d\d\d\d$' (must have five digit
                         print tag.attrib['v']
                         counter += 1
 
-In the code above, a counter was used to avoid iterating through the whole osm file (even if using only a sample file, sometimes). This was inspired by the lines of code used in the very first problem on using the csv module where instead of parsing the whole csv file, we only parse for a certain number of lines. Results of the above code gave these outliers (among others):
+In the code above, the "get_element" function from the code used to create the sample file (and also used in the "shape_element" function to be discussed later) came in handy in iterating through the xml tree during auditing. Also, instead of parsing through the whole xml, whether it is a sample or the whole file, using the variable "counter" allowed for the ability to stop iterating at the desired number of elements. The use of this approach was inspired by the lines of code used in the very first problem on using the csv module where instead of parsing the whole csv file, we only parse for a certain number of lines. Results of the above code gave these outliers (among others):
     
     78704-5639
     14150
@@ -236,8 +240,7 @@ Auditing and cleaning the city names follow a similar method as auditing and cle
                     if tag.attrib['v'] not in expectedcities:
                         cities.add(tag.attrib['v'])
 
-
-I found that running this code on the whole osm file returned only a few lines. Creating a dictionary similar to that used in cleaning the street names was done. The function, "update_city" involved only a few lines:
+I found that running this code on the whole osm file returned only a few lines. A dictionary similar to that used in cleaning the street names was then created. The function "update_city" involved only a few lines:
 
     def update_city(city, expectedcities, mapping_city):
         if city not in expectedcities:
@@ -247,7 +250,7 @@ I found that running this code on the whole osm file returned only a few lines. 
                 city = "None"
         return city
         
-There were still a lot of items to update, and some of these are evident after creation of the database. But only the items discussed above will be done.
+There were still a lot of items to update, and some of these are evident after creation of the database. But only the items discussed above were done.
 
 Instead of using all the functions above individually in the final xml data extraction, particularly in the "shape_element" function, a "clean" function was created and eventually used.
 
@@ -264,11 +267,11 @@ Instead of using all the functions above individually in the final xml data extr
         
 ## Extraction of Data from OSM File to CSV Files
 
-Data were extracted from the OSM file using the functions provided by the course, and a function, "shape_element" which not only parses the osm xml data but also cleans the data using the functions discussed above. However, the whole program was tried first on a sample of the osm file, which was also created using a provided Python program. 
+Data were extracted from the OSM file using the functions from the case study exercises from the course. However, we were guided to write the "shape_element" function which not only parses the osm xml data but also cleans the data using the functions discussed above. The general scheme for processing osm files start from creating csv files as output files using the codecs module, then shaping the output, validating this output against a set schema and then writing the output onto the csv files.
 
-Parsing the osm xml file was done using the iterparse method and the xml.etree.cElementTree module (instead of the xml.etree.ElementTree) which parses faster using lower memory compared to the ElementTree module (http://effbot.org/zone/celementtree.htm). The iterparse allows for iterative parsing (parsing one tag at a time) instead of parsing the whole tree at once before doing something, which is intuitively slower (https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075461/lessons/5436095827/concepts/54475500150923#, http://effbot.org/zone/element-iterparse.htm). 
+*### The shape_element function*
 
-Aside from the commands that involve writing the csv files, the program includes a validation command that checks the format of the data against a schema. This schema makes sure that the values returned upon parsing are correct.
+Parsing and cleaning of xml data occurs in the shape_element function. It extracts values of attributes from an xml element, instead of a whole xml tree (http://effbot.org/zone/celementtree.htm, http://effbot.org/zone/element-iterparse.htm, https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075461/lessons/5436095827/concepts/54475500150923#). Along with this extraction, the data is updated accordingly and appended to receptacles (lists and dictionaries). 
 
 I encountered problems processing the whole osm file with validation set to True even if I didn't obtain any errors processing the sample file with validation set to True. To figure out what was wrong, I gathered from the course forum that I needed to look for missing fields in the csv file obtained from running the program with validation set to False. However, I found it impossible to find any in the large csv output files. Besides, it was also impossible to load the whole file using a spreadsheet program. Blindly, I resorted to including lines of code to address missing data, though doing this was futile. An example of this is:
 
