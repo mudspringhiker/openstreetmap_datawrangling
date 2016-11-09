@@ -516,7 +516,7 @@ I explored the use of pandas to look at the list of users:
 
 This created a better looking table than the results of the sql querry (please see https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/austin/p3_wrangle_openstreetmap_4_querying_atxosm.ipynb)
 
-![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandastable1.png
+![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandastable1.png)
 
 Lastly, querrying the database for the most popular cuisines was done. Pandas was used to eventually plot the distribution of the different types of restaurants in the Austin, TX area. It is no surprise that the area has a lot of Mexican restaurants.
 
