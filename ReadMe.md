@@ -546,9 +546,11 @@ Plotting the locations of these restaurants vs. the locations of coffee shops ca
     plt.title('Restaurants, Coffee Shops')
     plt.legend(loc=2)
 
+
 ![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot1.png)
 
 Lastly, querrying the database for the most popular cuisines was done. Pandas was used to eventually plot the distribution of the different types of restaurants in the Austin, TX area. It is no surprise that the area has a lot of Mexican restaurants.
-    
+
+
 ![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot2.png)
 
