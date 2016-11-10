@@ -23,7 +23,7 @@ Exploration of the sample osm file as well as the whole osm file showed that:
 
 ### Notes About the Files
 
-I ran my final codes and analyses using Jupyter Notebook, using data_extraction.ipynb. Exploration of data is detailed in exploration_audit.ipynb. But the py files needed to create the csv files are cities.py, mapping_street.py, schema.py, clean.py, and data.py. 
+I ran my final code using Jupyter Notebook, using data_extraction.ipynb. Exploration of data is detailed in exploration_audit.ipynb. But the py files needed to create the csv files are cities.py, mapping_street.py, schema.py, clean.py, and data.py. 
 
 ### Cleaning of Street Names
 
