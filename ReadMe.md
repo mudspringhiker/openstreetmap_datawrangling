@@ -21,6 +21,10 @@ Exploration of the sample osm file as well as the whole osm file showed that:
 5. Postcodes didn't have a consistent format--some have county codes, some do not. 
 6. City name format is not consistent (ex: Pflugerville, TX; Pflugerville)
 
+### Notes About the Files
+
+I ran my final codes and analyses using Jupyter Notebook, using data_extraction.ipynb. Exploration of data is detailed in exploration_audit.ipynb. But the py files needed to create the csv files are cities.py, mapping_street.py, schema.py, clean.py, and data.py. 
+
 ### Cleaning of Street Names
 
 Using the method described in the case study exercises for the course, street names were audited using a regex and if street names don't follow that regex they get added to a dictionary of type set which makes sure that if the street name is already present, it won't get added to the dictionary. In the auditing function, the iterparse method is used to iterate through the xml tree.
