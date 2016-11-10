@@ -375,7 +375,7 @@ After this, I was able to obtain validated csv files and went on to create the S
 
 ## Creation and Querrying of SQL Database
 
-Creating the SQL database (atx_osm.db) was done by Python according to the method delineated in the course forum (https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6), using the schema specified in the following site: https://gist.github.com/swwelch/f1144229848b407e0a5d13fcb7fbbd6f. The process was straightfoward.
+Creating the SQL database (atx_osm.db) was done using Python according to the method outlined in the course forum (https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6), using the schema specified in the following site: https://gist.github.com/swwelch/f1144229848b407e0a5d13fcb7fbbd6f. The process was straightfoward. All codes are contained in this notebook: https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/p3_wrangle_openstreetmap_3_db_creation.ipynb
 
 Querrying for list of cities showed that pretty much of all the cities were cleaned:
 
