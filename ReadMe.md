@@ -12,7 +12,7 @@ https://www.dropbox.com/s/084lnztuwgxdgtm/sample.osm?dl=0
 
 ## Problems Encountered in the Map
 
-Exploration of the sample osm file (obtained using the code provided in the instructions for the project) as well as the whole osm file showed that:
+Exploration of the sample osm file as well as the whole osm file showed that:
 
 1. Street names need to be unabbreviated. 
 2. Inconsistent abbreviation for street names poses challenge in cleaning data (ex: IH35, I H 35, I-35, I35)
@@ -39,11 +39,11 @@ Using the method described in the case study exercises for the course, street na
         osm_file.close()
         return street_types
        
-The result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping" dictionary (discussed below). 
+The result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping_street" dictionary (discussed below). 
 
 In the process of auditing and coming up with functions to clean street names, I found it easier to create separate functions to fix different problems. The final function uses subfunctions that will be described below.
 
-In updating Farm-to-Market (and Road-to-Market) Roads, the challenge was to make it possible to update the following:
+In updating Farm-to-Market and Road-to-Market Roads, the challenge was to make it possible to update the following:
 - FM / RM
 - FM Road / RM Road
 - Farm to Market / Ranch to Market
@@ -118,7 +118,7 @@ In fixing common problems such as spellling out the full street names in abbrevi
 - "C" in "C R" (Country Road) and "Avenue C" (as is)
 - "N" in "N ..." (North) and "Avenue N" (as is)
 
-This problem was addressed by adding some lines to the "update_name" function, which was used in the case study exercises. In the case study, the "update_name" function uses a dictionary ("mapping") of abbreviated to unabbreviated pairs of street names to update the street names. elif statements were used. In the "update_name" function below, lines of code were added to address the problems above. "St" for "Saint" was updated first before "St" for "Street". "N", "C", "I" and "H" were also attended to first before mapping them to the "mapping" dictionary. The other functions "update_farm_ranch_to_market" and "append_highway" were added towards the last part of the function, after the "unabbreviations".
+This problem was addressed by adding some lines to the "update_name" function, which was used in the case study exercises. In the case study, the "update_name" function uses a dictionary ("mapping_street") of abbreviated to unabbreviated pairs of street names to update the street names. elif statements were used. In the "update_name" function below, lines of code were added to address the problems above. "St" for "Saint" was updated first before "St" for "Street". "N", "C", "I" and "H" were also attended to first before mapping them to the "mapping" dictionary. The other functions "update_farm_ranch_to_market" and "append_highway" were added towards the last part of the function, after the "unabbreviations".
 
     def update_name(name, mapping_street):
         parts = name.split()
@@ -375,7 +375,7 @@ After this, I was able to obtain validated csv files and went on to create the S
 
 ## Creation and Querrying of SQL Database
 
-Creating the SQL database (atx_osm.db) was done using Python according to the method outlined in the course forum (https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6), using the schema specified in the following site: https://gist.github.com/swwelch/f1144229848b407e0a5d13fcb7fbbd6f. The process was straightfoward. All codes are contained in this notebook: https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/p3_wrangle_openstreetmap_3_db_creation.ipynb
+Creating the SQL database (atx_osm.db) was done using Python according to the method outlined in the course forum (https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6), using the schema specified in the following site: https://gist.github.com/swwelch/f1144229848b407e0a5d13fcb7fbbd6f. The process was straightfoward. All codes are contained in this notebook: https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/db_creation.ipynb
 
 Querrying for list of cities showed that pretty much of all the cities were cleaned:
 
