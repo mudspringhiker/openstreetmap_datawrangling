@@ -6,34 +6,51 @@ Austin, TX USA
 
 https://mapzen.com/data/metro-extracts/metro/austin_texas/
 
-This area is where I currently live, so it is more familiar to me.
+This area is more familiar to me at the moment so I chose it. It also meets the project requirements of having at least 50 MB file size uncompressed. As delineated in class, the data was obtained by downloading the readily available extract above. Uncompressing the file gave a 1.4 GB osm file. A sample of this file was generated using the code provided in the instructions for the project. The link to this smaller osm file is:
+
+https://www.dropbox.com/s/084lnztuwgxdgtm/sample.osm?dl=0
 
 ## Problems Encountered in the Map
 
 Exploration of the sample osm file (obtained using the code provided in the instructions for the project) as well as the whole osm file showed that:
 
 1. Street names need to be unabbreviated. 
-2. Inconsistent abbreviation for street names poses challenge in cleaning data (IH35, I H 35, I-35, I35)
-3. Phone number format is not consistent ((512) 782-5659, +1 512-472-1666, 51224990093, 512 466-3937, etc.)
-4. More than one phone number are entered in the field (Main: (512) 899-4300 Catering: (512) 899-4343)
+2. Inconsistent abbreviation for street names poses challenge in cleaning data (ex: IH35, I H 35, I-35, I35)
+3. Phone number format is not consistent (ex: (512) 782-5659, +1 512-472-1666, 51224990093, 512 466-3937, etc.)
+4. More than one phone number are entered in the field (ex: "Main: (512) 899-4300 Catering: (512) 899-4343")
 5. Postcodes didn't have a consistent format--some have county codes, some do not. 
-6. City name format is not consistent (Pflugerville, TX; Pflugerville)
+6. City name format is not consistent (ex: Pflugerville, TX; Pflugerville)
 
 ### Cleaning of Street Names
 
-Aside from the finding that some street names need to be spelled out, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project.
+Using the method described in the case study exercises for the course, street names were audited using a regex and if street names don't follow that regex they get added to a dictionary of type set which makes sure that if the street name is already present, it won't get added to the dictionary. In the auditing function, the iterparse method is used to iterate through the xml tree.
 
-I found it easier to create separate functions to fix different problems. They are discussed below.
+    def is_street_name(elem):
+        return (elem.attrib['k'] == 'addr:street')
+        
+    def audit(osmfile):
+        osm_file = open(osmfile, 'r')
+        street_types = defaultdict(set)
+        for event, elem in ET.iterparse(osm_file, events=("start",)):
+            if elem.tag == "node" or elem.tag == "way":
+                for tag in elem.iter("tag"):
+                    if is_street_name(tag):
+                        audit_street_type(street_types, tag.attrib['v'])
+        osm_file.close()
+        return street_types
+       
+The result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping" dictionary (discussed below). 
+
+In the process of auditing and coming up with functions to clean street names, I found it easier to create separate functions to fix different problems. The final function uses subfunctions that will be described below.
 
 In updating Farm-to-Market (and Road-to-Market) Roads, the challenge was to make it possible to update the following:
-- FM
-- FM Road
-- Farm to Market
-- Farm to Market Road
-- FM620 (with number of the road attached)
+- FM / RM
+- FM Road / RM Road
+- Farm to Market / Ranch to Market
+- Farm to Market Road / Ranch to Market Road
+- FM620 / RM1431 (with number of the road attached)
 
-
-elif statements were used in the function "update_farm_ranch_to_market" to address the problem:
+elif statements were used in the function "update_farm_ranch_to_market" to fix the problem:
 
     def update_farm_ranch_to_market(name):
         parts = name.split()
@@ -69,11 +86,11 @@ elif statements were used in the function "update_farm_ranch_to_market" to addre
 
             if "Road" in parts:
                 name = " ".join(newname)
-        else:
-            newname.insert(newname.index("Ranch-to-Market")+1,"Road")
-            name = " ".join(newname)
+            else:
+                newname.insert(newname.index("Ranch-to-Market")+1,"Road")
+                name = " ".join(newname)
             
-    return name
+        return name
 
 In some cases, "Highway" is needed to be appended. For example:
 
@@ -94,15 +111,16 @@ The following function, "append_highway" was created:
         name = ' '.join(newparts)
         return name
 
-In fixing common problems such as spellling out the full street name in abbreviated names, a problem occurred where there is more than one meaning to the abbreviation. For example:
+In fixing common problems such as spellling out the full street names in abbreviated names, a problem occurred where there is more than one meaning to the abbreviation. For example:
 
-- Pecan St (Pecan Street) vs. Rue de St Germanaine (Rue de Saint Germaine)
-- I H 35 (Interstate Highway 35) vs. Avenue H (as is)
-- C R (Country Road) vs. Avenue C (as is)
+- "St" in "Pecan St" (Pecan Street) and Rue de St Germanaine (Rue de Saint Germaine)
+- "H" and "I" in "I H 35" (Interstate Highway 35) and "Avenue H" (as is) and "Avenue I" (as is)
+- "C" in "C R" (Country Road) and "Avenue C" (as is)
+- "N" in "N ..." (North) and "Avenue N" (as is)
 
-This problem was addressed by adding some lines to the "update_name" function, which was part of the exercise in the course. In the course, the update_name function uses a dictionary ("mapping") of abbreviated to unabbreviated pairs of street names to update the street name. elif statements were used. "St" for "Saint" was updated first before "St" for "Street". "N", "C", "I" and "H" were also attended to first before mapping them to the "mapping" dict. The other functions "update_farm_ranch_to_market" and "append_highway" were added towards the last part of the function so there done last after spelling out the abbreviations.
+This problem was addressed by adding some lines to the "update_name" function, which was used in the case study exercises. In the case study, the "update_name" function uses a dictionary ("mapping") of abbreviated to unabbreviated pairs of street names to update the street names. elif statements were used. In the "update_name" function below, lines of code were added to address the problems above. "St" for "Saint" was updated first before "St" for "Street". "N", "C", "I" and "H" were also attended to first before mapping them to the "mapping" dictionary. The other functions "update_farm_ranch_to_market" and "append_highway" were added towards the last part of the function, after the "unabbreviations".
 
-    def update_name(name, mapping):
+    def update_name(name, mapping_street):
         parts = name.split()
         newparts = []
         for item in parts:
@@ -126,19 +144,23 @@ This problem was addressed by adding some lines to the "update_name" function, w
         name = update_farm_ranch_to_market(name)
         return name
 
-*A note about my use of try/except statements: they were used without regard for whether if/else statements can be used, as I was influenced by a book (Data Science from Scratch) on its use. I was reading this book while doing the course and having no programming background, I thought it was fine to use, until a forum mentor informed me to only use try/except when if/else can't be used anymore. Personally, I think it's ok, though. I did try to use if/else statements more if I can, it's just that sometimes, I deemed it better to use try/except statements (fewer lines of code).*
+*A note about my use of try/except statements: they were used without regard for whether if/else statements can be used, as I thought it was fine to use, until a forum mentor informed me to only use try/except when if/else can't be used anymore. I did try to use if/else statements more if I can, it's just that sometimes, I deemed it better to use try/except statements (fewer lines of code).*
 
 ### Cleaning Postcodes
 
 Another area to update is the postal codes which do not follow a uniform format. Most of the postcodes do not include the county codes. I decided to remove the county codes. But if a total cleaning is needed, a new field for county codes should be created in order to not lose the county codes data. This wasn't done here (however, it might be easily fixable if MongoDB was used--I used SQL).
 
-During auditing of the postcodes, a regex of the form (r'^7\d\d\d\d$' -- must have five digits which must start with "7" and must end with a digit, hence the caret at the beginning and a dollar sign at the end) was used to exclude any entries following the 5-digit postcode format. Anything not following this format can be printed off and examined to see how they can be updated:
+To audit the postcodes, a regex of the form r'^7\d\d\d\d$' (must have five digits which must start with "7" and must end with a digit, hence the caret at the beginning and a dollar sign at the end) was used to exclude any entries following the 5-digit postcode format. Anything not following this format can be printed off and examined to see how they can be updated.
+
+    import re
 
     def is_postcode(element):
         return (element.attrib['k'] == "addr:postcode" or element.attrib['k'] == "postal_code")
+     
+    postcode_re = re.compile('r^7\d\d\d\d$')
         
     counter = 0
-    for element in get_element(OSM_FILE):
+    for element in get_element(SAMPLE_FILE):
         if counter == 25:
             break
         if element.tag == "node" or element.tag == "way":
@@ -148,14 +170,14 @@ During auditing of the postcodes, a regex of the form (r'^7\d\d\d\d$' -- must ha
                         print tag.attrib['v']
                         counter += 1
 
-In the code above, instead of using a the smaller osm file, a counter was used. This was inspired by the lines of code used in the very first problem on using the csv module where instead of parsing the whole csv file, we only parse for a certain number of lines. Result of the above code gave these outliers:
+In the code above, the "get_element" function from the code used to create the sample file (and also used in the "shape_element" function to be discussed later) came in handy in iterating through the xml tree during auditing. Also, instead of parsing through the whole xml, whether it is a sample or the whole file, using the variable "counter" allowed for the ability to stop iterating at the desired number of elements. The use of this approach was inspired by the lines of code used in the very first problem on using the csv module where instead of parsing the whole csv file, we only parse for a certain number of lines. Results of the above code gave these outliers (among others):
     
     78704-5639
     14150
     TX 78613
     Texas
 
-To update these postcodes, the "update_postcode" function was created. It uses a different but similar regex:
+To update the postcodes, the "update_postcode" function was created. It uses a different but similar regex:
 
     def update_postcode(postcode):
         try:
@@ -164,15 +186,15 @@ To update these postcodes, the "update_postcode" function was created. It uses a
             postcode = 'None'
         return postcode
 
-The use of the regex above in the function allowed for the 5-digit postcode to be extracted from the jumble if there is a one, instead of doing any manipulations (remove county codes, remove "TX" to obtain the correct format).
+The use of the regex above in the function allowed for the 5-digit postcode to be extracted from the jumble of 5-digit numbers if there is a one, instead of doing any manipulations (remove county codes, remove "TX" to obtain the correct format).
 
 ### Cleaning Phone Numbers
 
-A similar approach to auditing post codes was used to audit the phone numbers. The regex:
+A similar approach to auditing post codes was used to audit the phone numbers. "phone_re_audit" was used for auditing osm files.
 
-                                    r'^\d\d\d\-\d\d\d\-\d\d\d\d$'
+    phone_re_audit = re.compile(r'^\d\d\d\-\d\d\d\-\d\d\d\d$')
 
-was used during auditing. I simply chose the xxx-xxx-xxxx format for the phone numbers. Auditing gave me the outliers:
+I simply chose the xxx-xxx-xxxx format for the phone numbers. Some of the results of the audit using a similar code as in the auditing of postcodes, are:
 
     +1 512-472-1666
     (512) 494-9300
@@ -180,7 +202,7 @@ was used during auditing. I simply chose the xxx-xxx-xxxx format for the phone n
     +1-512-666-5286;+1-855-444-8301
     Main: (512) 206-1000 Catering: (512) 206-1024
 
-After auditing, the cleaning function I used uses the same regex but cleaning is a little involved because of the dashes that need to be appended. Also, the occurrence of two phone numbers complicated the case. This was addressed using a limit of number of characters in the phone number (10).
+After auditing, I decided to use the same regex but cleaning the phone numbers is a little involved because of the dashes that need to be appended. Also, the occurrence of two phone numbers complicated the case. This was addressed using a limit of number of characters in the phone number (10).
 
     def update_phone(number):
         phone_re = re.compile(r'^\d\d\d\-\d\d\d\-\d\d\d\d$')
@@ -204,21 +226,21 @@ Another approach to the two phone numbers entered in the field would be using th
 
 ### Cleaning the City Names
 
-Auditing and cleaning the city names follow a similar method as auditing and cleaning the street names. A list of expected cities was created and any city not found in this list is printed during auditing:
+Auditing and cleaning the city names follow a similar method as auditing and cleaning the street names. A list of expected cities was created and any city not found in this list was added to a set that should contain city names that need to be updated:
 
     def is_city(element):
         return element.attrib['k'] == "addr:city"
         
     cities = set()
 
-    for element in get_element(OSM_FILE):
+    for element in get_element(SAMPLE_FILE):
         if element.tag == "node" or element.tag == "way":
             for tag in element.iter("tag"):
                 if is_city(tag):
                     if tag.attrib['v'] not in expectedcities:
                         cities.add(tag.attrib['v'])
 
-Running this code on the whole osm file returned only a few lines. Therefore, creating a dictionary similar to that used in cleaning the street names was done. The function, "update_city" involved only a few lines:
+I found that running this code on the whole osm file returned only a few lines. A dictionary similar to that used in cleaning the street names was then created. The function "update_city" involved only a few lines:
 
     def update_city(city, expectedcities, mapping_city):
         if city not in expectedcities:
@@ -228,7 +250,7 @@ Running this code on the whole osm file returned only a few lines. Therefore, cr
                 city = "None"
         return city
         
-There were still a lot of items to update, and some of these are evident after creation of the database. But only the items discussed above will be done.
+There were still a lot of items to update, and some of these are evident after creation of the database. But only the items discussed above were done.
 
 Instead of using all the functions above individually in the final xml data extraction, particularly in the "shape_element" function, a "clean" function was created and eventually used.
 
@@ -245,11 +267,11 @@ Instead of using all the functions above individually in the final xml data extr
         
 ## Extraction of Data from OSM File to CSV Files
 
-Data were extracted from the OSM file using the functions provided by the course, and a function, "shape_element" which not only parses the osm xml data but also cleans the data using the functions discussed above. However, the whole program was tried first on a sample of the osm file, which was also created using a provided Python program. The link to this smaller osm file is here: https://www.dropbox.com/s/6xmlte2z3mkr1ed/austin_texas.osm?dl=0.
+Data were extracted from the OSM file using the functions from the case study exercises from the course. However, we were guided to write the "shape_element" function which not only parses the osm xml data but also cleans the data using the functions discussed above. The general scheme for processing osm files start from creating csv files as output files using the codecs module, then shaping the output, validating this output against a set schema and then writing the output onto the csv files.
 
-Parsing the osm xml file was done using the iterparse method and the xml.etree.cElementTree module (instead of the xml.etree.ElementTree) which parses faster using lower memory compared to the ElementTree module (http://effbot.org/zone/celementtree.htm). The iterparse allows for iterative parsing (parsing one tag at a time) instead of parsing the whole tree at once before doing something, which is intuitively slower (https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075461/lessons/5436095827/concepts/54475500150923#, http://effbot.org/zone/element-iterparse.htm). 
+#### *The shape_element function*
 
-Aside from the commands that involve writing the csv files, the program includes a validation command that checks the format of the data against a schema. This schema makes sure that the values returned upon parsing are correct.
+Parsing and cleaning of xml data occurs in the shape_element function. It extracts values of attributes from an xml element, instead of a whole xml tree (http://effbot.org/zone/celementtree.htm, http://effbot.org/zone/element-iterparse.htm, https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075461/lessons/5436095827/concepts/54475500150923#). Along with this extraction, the data is updated accordingly and appended to receptacles (lists and dictionaries). 
 
 I encountered problems processing the whole osm file with validation set to True even if I didn't obtain any errors processing the sample file with validation set to True. To figure out what was wrong, I gathered from the course forum that I needed to look for missing fields in the csv file obtained from running the program with validation set to False. However, I found it impossible to find any in the large csv output files. Besides, it was also impossible to load the whole file using a spreadsheet program. Blindly, I resorted to including lines of code to address missing data, though doing this was futile. An example of this is:
 
@@ -572,8 +594,11 @@ Cleaning of data takes a while. Knowledge of the nature of data also is very imp
 ## Other References
 
 Automate the Boring Stuff with Python: Practical Programming for Total Beginners, A. Sweighart, No Starch Press San Francisco, CA, USA ©2015 ISBN:1593275994 9781593275990
+
 http://stackoverflow.com/questions/19877344/near-syntax-error-when-trying-to-create-a-table-with-a-foreign-key-in-sqlit
+
 Brandon Rhodes - Pandas From The Ground Up - PyCon 2015, https://www.youtube.com/watch?v=5JnMutdy6Fw
+
 Udacity Data Wrangling Course
 (https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075460/lessons/491558559/concepts/816599080
 
