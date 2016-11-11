@@ -106,46 +106,9 @@ Querrying for list of cities showed that pretty much of all the cities were clea
         (u'Leander', 33),
         (u'Buda', 26),
         (u'Georgetown', 17),
-        (u'Dripping Springs', 13),
-        (u'West Lake Hills', 12),
-        (u'Bastrop', 9),
-        (u'Elgin', 9),
-        (u'Lakeway', 9),
-        (u'Wimberley', 8),
-        (u'Taylor', 7),
-        (u'Bee Cave', 6),
-        (u'Del Valle', 5),
-        (u'Manor', 5),
-        (u'Manchaca', 4),
-        (u'Cedar Creek', 3),
-        (u'Hutto', 3),
-        (u'Spicewood', 3),
-        (u'Creedmoor', 2),
-        (u'Lago Vista', 2),
-        (u'San Marcos', 2),
-        (u'Sunset Valley', 2),
-        (u'Webberville', 2),
-        (u'Driftwood', 1),
-        (u'Jonestown', 1),
-        (u'Lost Pines', 1),
-        (u'Manchacha', 1),
-        (u'Maxwell', 1),
-        (u'Smithville', 1)]
+        (u'Dripping Springs', 13), .....
 
-However, looking at the postcodes, there were three "None" values.
-    
-    postcode = cur.execute("""SELECT tags.value, COUNT(*) as count
-                          FROM (SELECT * FROM nodes_tags
-                                UNION ALL SELECT * FROM ways_tags) tags 
-                          WHERE tags.key = 'postcode' 
-                          GROUP BY tags.value 
-                          ORDER By count DESC""").fetchall()
-
-Result from the above query include:
-
-    (u'None', 3)
-    
-To figure out what these should be, I querried for the accompanying information with these values. 
+However, looking at the postcodes (querried using a similar code as that used for querrying for cities), there were three "None" values. To figure out what these should be, I querried for the accompanying information with these values. 
 
     missing_postcodes = cur.execute("""SELECT * 
                                        FROM (SELECT * FROM nodes_tags
@@ -167,18 +130,14 @@ To determine what info is accompanying id 2152207067, the following query was do
              UNION ALL 
              SELECT * FROM ways_tags) tags
              WHERE tags.id = 2152207067""")
-    missing_postcode1_info = cur.fetchall()
-    print missing_postcode1_info
-    
+    cur.fetchall()
     Out: [(2152207067, u'name', u'Nyle Maxwell - Taylor', u'regular'),
         (2152207067, u'shop', u'car', u'regular'),
         (2152207067, u'website', u'www.nylemaxwellcjd.com', u'regular'),
         (2152207067, u'street', u'United States Highway 79', u'addr'),
         (2152207067, u'postcode', u'None', u'addr')]
         
-From this result and accessing the provided website, it can be found that the postcode should be 76574.
-
-The other postcodes were determined in the same way.
+From this result and accessing the provided website, it can be found that the postcode should be 76574. The other missing postcodes were determined in the same way.
 
 ### Locations of Restaurants
 
@@ -228,8 +187,6 @@ This value is the same as the one obtained from the exploration of dataset using
              ways
     Out[18]:
             [(666390,)]
-            
-This is also the same number obtained from the the ElementTree module in Python (p3_wrangle_openstreetmap_1.ipynb, High Level Tags).
 
 ### Number of Users/Contributors
 
@@ -239,8 +196,6 @@ This is also the same number obtained from the the ElementTree module in Python 
              users
     Out[19]:
              [(1146,)]
-
-This number is lower than the one obtained using the ElementTree module in the exploration of the xml osm (1155 users, p3_wrangle_openstreetmap_1.ipynb, Exploring Users). This might be because when the csv files were created, the key values with problematic characters were removed, along with the rest of the record containing that value.
 
 ### Top 10 Contributing Users
 
