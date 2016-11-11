@@ -138,11 +138,11 @@ The query used to obtain a list of all the restaurants in the Austin, TX area wa
                                  
 Obtaining the locations of the coffee shops will then have a similar code and plotting the locations of these restaurants vs. the locations of coffee shops can then be done:
 
-![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot1.png)
+![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot1copy.png)
 
 Lastly, querrying the database for the most popular cuisines was done. Pandas was used to eventually plot the distribution of the different types of restaurants in the Austin, TX area. It is no surprise that the area has a lot of Mexican restaurants.
 
-![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot2.png)
+![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot2copy.png)
 
 ## Data Overview and Additional Ideas
 
