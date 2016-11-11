@@ -77,7 +77,7 @@ Data were extracted from the OSM file using the functions from the case study ex
 
 #### *The shape_element function*
 
-Parsing and cleaning of xml data occurs in the shape_element function. It extracts values of attributes from an xml element, instead of a whole xml tree (http://effbot.org/zone/celementtree.htm, http://effbot.org/zone/element-iterparse.htm, https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075461/lessons/5436095827/concepts/54475500150923#). Along with this extraction, the data is updated accordingly and appended to receptacles (lists and dictionaries). 
+Parsing and cleaning of xml data occurs in the shape_element function. It extracts values of attributes from an xml element, instead of a whole xml tree  Along with this extraction, the data is updated accordingly and appended to receptacles (lists and dictionaries). 
 
 I encountered problems processing the whole osm file with validation set to True even if I didn't obtain any errors processing the sample file with validation set to True. To figure out what was wrong, I gathered from the course forum that I needed to look for missing fields in the csv file obtained from running the program with validation set to False. However, I found it impossible to find any in the large csv output files. Besides, it was also impossible to load the whole file using a spreadsheet program. Blindly, I resorted to including lines of code to address missing data, though doing this was futile. An example of this is:
 
@@ -153,9 +153,11 @@ This would have worked if I included "continue" in the third line of the code.
 
 I did change my code to use the if/else statement.
 
-## Creation and Querrying of SQL Database
+## Creation SQL Database
 
 Creating the SQL database (atx_osm.db) was done using Python according to the method outlined in the course forum (https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6), using the schema specified in the following site: https://gist.github.com/swwelch/f1144229848b407e0a5d13fcb7fbbd6f. The process was straightfoward. All codes are contained in this notebook: https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/db_creation.ipynb
+    
+## Querrying the SQL Database
 
 Querrying for list of cities showed that pretty much of all the cities were cleaned:
 
@@ -250,9 +252,38 @@ From this result and accessing the provided website, it can be found that the po
 
 The other postcodes were determined in the same way.
 
-### Number of Nodes and Ways
+### Locations of Restaurants
 
-Nodes:
+The query used to obtain a list of all the restaurants in the Austin, TX area was:
+    
+    cuisine_loc = cur.execute("""SELECT b.id, b.value, nodes.lat, nodes.lon 
+                                 FROM (SELECT * FROM nodes_tags UNION ALL SELECT * FROM ways_tags) b
+                                   JOIN nodes ON b.id = nodes.id 
+                                 WHERE b.key = 'cuisine'""").fetchall()
+                                 
+Obtaining the locations of the coffee shops will then have a similar code and plotting the locations of these restaurants vs. the locations of coffee shops can then be done:
+
+![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot1.png)
+
+Lastly, querrying the database for the most popular cuisines was done. Pandas was used to eventually plot the distribution of the different types of restaurants in the Austin, TX area. It is no surprise that the area has a lot of Mexican restaurants.
+
+![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot2.png)
+
+## Data Overview and Additional Ideas
+
+The following are some information about the dataset:
+
+### File Sizes
+
+    austin_texas.osm        1.41 GB
+    atx_osm.db              820.4 MB
+    nodes.csv               604.3 MB
+    nodes_tags.csv          11.7 MB
+    ways.csv                48.6 MB
+    ways_tags.csv           70.6 MB
+    ways_nodes.csv          175.6 MB
+    
+### Number of Nodes
 
     In [17]: cur.execute("SELECT COUNT(*) FROM nodes")
              nodes = cur.fetchall()
@@ -261,6 +292,8 @@ Nodes:
              [(6356394,)]
              
 This value is the same as the one obtained from the exploration of dataset using xml.etree.cElementTree module of Python (see p3_wrangle_openstreetmap_1.ipynb, High Level Tags).
+
+### Number of Ways
 
     In [18]: cur.execute("SELECT COUNT(*) FROM ways")
              ways = cur.fetchall()
@@ -301,54 +334,15 @@ Output:
      (u'richlv', 50212),
      (u'johnclary_axtbuildings', 48232)]
              
-However by using pandas module, a better looking table of the results can be obtained:
+However by using the pandas module, a better looking table of the results can be obtained:
 
 ![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandastable1.png)
 
-### Locations of Restaurants
+### Suggestions for Improvement of Data
 
-The query used to obtain a list of all the restaurants in the Austin, TX area was:
-    
-    cuisine_loc = cur.execute("""SELECT b.id, b.value, nodes.lat, nodes.lon 
-                                 FROM (SELECT * FROM nodes_tags UNION ALL SELECT * FROM ways_tags) b
-                                   JOIN nodes ON b.id = nodes.id 
-                                 WHERE b.key = 'cuisine'""").fetchall()
-                                 
-Obtaining the locations of the coffee shops will then have a similar code:
-    
-    coffee_loc = cur.execute("""SELECT b.id, b.value, nodes.lat, nodes.lon 
-                                FROM (SELECT * FROM nodes_tags UNION ALL SELECT * FROM ways_tags) b
-                                  JOIN nodes ON b.id = nodes.id 
-                                WHERE b.value = 'coffee_shop'""").fetchall()
+One aspect that always crop up during clean up of my data was loss of data, such as in the case above where one of two phone numbers provided gets discarded. This may be remedied by using a list as value for the field. However, the validation check will flag this and create an error. A non-SQL database might be more applicable in handling this case.
 
-Plotting the locations of these restaurants vs. the locations of coffee shops can then be done:
-
-    import matplotlib.pyplot as plt
-    import seaborn
-    % matplotlib inline (only if using notebook)
-    plt.scatter([x[2] for x in cuisine_loc], [y[3] for y in cuisine_loc], c='blue', label="restaurant")
-    plt.scatter([x[2] for x in coffee_loc], [y[3] for y in coffee_loc], c='red', label="coffee shop")
-    plt.xlabel('Latitude')
-    plt.ylabel('Longtitude')
-    plt.title('Restaurants, Coffee Shops')
-    plt.legend(loc=2)
-
-
-![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot1.png)
-
-Lastly, querrying the database for the most popular cuisines was done. Pandas was used to eventually plot the distribution of the different types of restaurants in the Austin, TX area. It is no surprise that the area has a lot of Mexican restaurants.
-
-![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandasplot2.png)
-
-## File Sizes
-
-    austin_texas.osm        1.41 GB
-    atx_osm.db              820.4 MB
-    nodes.csv               604.3 MB
-    nodes_tags.csv          11.7 MB
-    ways.csv                48.6 MB
-    ways_tags.csv           70.6 MB
-    ways_nodes.csv          175.6 MB
+Another problem with the data itself is the presence of more than one field names for one type of data. When the values of attribute 'k' was explored, there were at least two "fix me"'s as values. There were also more than one for phone numbers and postal codes. A standardization of the k values should be instituted by OpenStreetMap. Anything that does not fit the list of these k values should create an error upon data entry for contributors. Also, the format for the values might also be standardized. A disadvantage of such rules however, might discourage contributors causing a slow development of OSM. However, if an automated cleaning program is instituted, it might be ok.
 
 ## Conclusion
 
@@ -366,4 +360,11 @@ Brandon Rhodes - Pandas From The Ground Up - PyCon 2015, https://www.youtube.com
 
 Udacity Data Wrangling Course
 (https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/316820862075460/lessons/491558559/concepts/816599080
+
+About the xml module method .iterparse:
+
+(http://effbot.org/zone/celementtree.htm, 
+
+http://effbot.org/zone/element-iterparse.htm,
+
 
