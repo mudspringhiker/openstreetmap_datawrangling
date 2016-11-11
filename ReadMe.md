@@ -27,132 +27,33 @@ I ran my final code using Jupyter Notebook, using data_extraction.ipynb. Explora
 
 ### Cleaning of Street Names
 
-Using the method described in the case study exercises for the course, street names were audited using a regex and if street names don't follow that regex they get added to a dictionary of type set which makes sure that if the street name is already present, it won't get added to the dictionary. In the auditing function, the iterparse method is used to iterate through the xml tree.
+Using the method described in the case study exercises for the course. However, the result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. In this project, the "update_name" function introduced in the case study exercises was modified by adding subfunctions and other lines of code, to successfully update the street names. An example of update done is standardizing "Farm-to-Market Roads" and "Road-to-Market Roads" which are referred to in the map by the following:
 
-    def is_street_name(elem):
-        return (elem.attrib['k'] == 'addr:street')
-        
-    def audit(osmfile):
-        osm_file = open(osmfile, 'r')
-        street_types = defaultdict(set)
-        for event, elem in ET.iterparse(osm_file, events=("start",)):
-            if elem.tag == "node" or elem.tag == "way":
-                for tag in elem.iter("tag"):
-                    if is_street_name(tag):
-                        audit_street_type(street_types, tag.attrib['v'])
-        osm_file.close()
-        return street_types
-       
-The result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. This was addressed in the final code for cleaning up the street names, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping_street" dictionary (discussed below). 
-
-In the process of auditing and coming up with functions to clean street names, I found it easier to create separate functions to fix different problems. The final function uses subfunctions that will be described below.
-
-In updating Farm-to-Market and Road-to-Market Roads, the challenge was to make it possible to update the following:
 - FM / RM
 - FM Road / RM Road
 - Farm to Market / Ranch to Market
 - Farm to Market Road / Ranch to Market Road
 - FM620 / RM1431 (with number of the road attached)
 
-elif statements were used in the function "update_farm_ranch_to_market" to fix the problem:
-
-    def update_farm_ranch_to_market(name):
-        parts = name.split()
-        if "Farm-to-Market" in parts or "Ranch-to-Market" in parts:
-            if "Road" in parts:
-                return name
-            else:
-                try:
-                    parts.insert(parts.index("Farm-to-Market")+1, "Road")
-                    name = " ".join(parts)
-                except ValueError:
-                    parts.insert(parts.index("Ranch-to-Market")+1, "Road")  
-                    name = " ".join(parts)
-        elif "Farm" in parts and "to" in parts and "Market" in parts:
-            newname = []
-            for i in range(parts.index("Farm")):
-                newname.append(parts[parts.index(i)])
-            newname.append("Farm-to-Market")
-            newname += parts[parts.index("Market")+1:]
-
-            if "Road" in parts:
-                name = " ".join(newname)
-            else:
-                newname.insert(newname.index("Farm-to-Market")+1,"Road")
-                name = " ".join(newname)
-    
-        elif "Ranch" in parts and "to" in parts and "Market" in parts:
-            newname = []
-            for i in range(parts.index("Ranch")):
-                newname.append(parts[parts.index(i)])
-            newname.append("Ranch-to-Market")
-            newname += parts[parts.index("Market")+1:]
-
-            if "Road" in parts:
-                name = " ".join(newname)
-            else:
-                newname.insert(newname.index("Ranch-to-Market")+1,"Road")
-                name = " ".join(newname)
-            
-        return name
+elif statements were used in the function "update_farm_ranch_to_market" to fix this problem.
 
 In some cases, "Highway" is needed to be appended. For example:
 
 - US 290 (United States Highway 290)
 - I35 (Interstate Highway 35)
 
-The following function, "append_highway" was created:
-
-    def append_highway(name):
-        newparts = []
-        parts = name.split()
-        for item in parts:
-            if (item == "Interstate" or item == "States") and "Highway" not in parts:
-                newparts.append(item)
-                newparts.append("Highway")
-            else:
-                newparts.append(item)
-        name = ' '.join(newparts)
-        return name
+For this problem, the "append_highway" function was created.
 
 In fixing common problems such as spellling out the full street names in abbreviated names, a problem occurred where there is more than one meaning to the abbreviation. For example:
 
 - "St" in "Pecan St" (Pecan Street) and Rue de St Germanaine (Rue de Saint Germaine)
 - "H" and "I" in "I H 35" (Interstate Highway 35) and "Avenue H" (as is) and "Avenue I" (as is)
-- "C" in "C R" (Country Road) and "Avenue C" (as is)
-- "N" in "N ..." (North) and "Avenue N" (as is)
 
-This problem was addressed by adding some lines to the "update_name" function, which was used in the case study exercises. In the case study, the "update_name" function uses a dictionary ("mapping_street") of abbreviated to unabbreviated pairs of street names to update the street names. elif statements were used. In the "update_name" function below, lines of code were added to address the problems above. "St" for "Saint" was updated first before "St" for "Street". "N", "C", "I" and "H" were also attended to first before mapping them to the "mapping" dictionary. The other functions "update_farm_ranch_to_market" and "append_highway" were added towards the last part of the function, after the "unabbreviations".
-
-    def update_name(name, mapping_street):
-        parts = name.split()
-        newparts = []
-        for item in parts:
-            if item == "St" and "Rue" in parts:
-                newparts.append("Saint")
-            elif item == "N" or item == "C" or item == "I" or item == "H": 
-                try:
-                    if newparts[0] == "Avenue":
-                        newparts.append(item)
-                    else:
-                        newparts.append(mapping[item])
-                except IndexError:
-                    newparts.append(mapping[item])
-            else:
-                if item in mapping.keys():
-                    newparts.append(mapping[item])
-                else:
-                    newparts.append(item)
-        name = ' '.join(newparts)
-        name = append_highway(name)
-        name = update_farm_ranch_to_market(name)
-        return name
-
-*A note about my use of try/except statements: they were used without regard for whether if/else statements can be used, as I thought it was fine to use, until a forum mentor informed me to only use try/except when if/else can't be used anymore. I did try to use if/else statements more if I can, it's just that sometimes, I deemed it better to use try/except statements (fewer lines of code).*
+The final "update_name" function used in the project therefore included codes to fix all these problems, although there were still some problems remaining after clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping_street" dictionary (discussed below). 
 
 ### Cleaning Postcodes
 
-Another area to update is the postal codes which do not follow a uniform format. Most of the postcodes do not include the county codes. I decided to remove the county codes. But if a total cleaning is needed, a new field for county codes should be created in order to not lose the county codes data. This wasn't done here (however, it might be easily fixable if MongoDB was used--I used SQL).
+Another area updated in the map is the postal codes which do not follow a uniform format. Most of the postcodes do not include the county codes. I decided to remove the county codes. But if a total cleaning is needed, a new field for county codes should be created in order to not lose the county codes data. This wasn't done here (however, it might be easily fixable if MongoDB was used--I used SQL).
 
 To audit the postcodes, a regex of the form r'^7\d\d\d\d$' (must have five digits which must start with "7" and must end with a digit, hence the caret at the beginning and a dollar sign at the end) was used to exclude any entries following the 5-digit postcode format. Anything not following this format can be printed off and examined to see how they can be updated.
 
