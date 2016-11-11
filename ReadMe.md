@@ -26,7 +26,6 @@ Exploration of the sample osm file as well as the whole osm file showed that:
 Using the method described in the case study exercises for the course. However, the result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. In this project, the "update_name" function introduced in the case study exercises was modified by adding subfunctions and other lines of code, to successfully update the street names. Examples of updates done are:
 
     North IH 35 => North Interstate Highway 35
-    South I 35 => South Interstate Highway 35
     Calhoun Ln => Calhoun Lane
     FM 685 => Farm-to-Market Road 685
     W. University Avenue,Ste 320 => West University Avenue Suite 320
@@ -46,16 +45,6 @@ Auditing the postcodes using a regular expression showed that it didn't follow a
     Texas => None
     TX 78613 => 78613
 
-### Cleaning Phone Numbers
-
-A similar approach to auditing post codes was used to audit the phone numbers (a regex was used). I simply chose the xxx-xxx-xxxx format for the phone numbers. Some of the results of the audit using a similar code as in the auditing of postcodes, are:
-
-    512.386.1295 => 512-386-1295
-    512-476-2625 => 512-476-2625
-    Main: (512) 206-1000 Catering: (512) 206-1024 => 512-206-1000
-
-In the last example above, I resorted to removing the second phone number. But to avoid losing data, the .findall() method can be used instead of the .search() method in the regex statement. It wasn't done in the project, however.
-
 ### The "clean" Function
 
 Instead of using all the functions above individually in the final xml data extraction, particularly in the "shape_element" function, a "clean" function was created and eventually used.
@@ -73,70 +62,9 @@ Instead of using all the functions above individually in the final xml data extr
         
 ## Extraction of Data from OSM File to CSV Files
 
-Data were extracted from the OSM file using the functions from the case study exercises from the course. However, we were guided to write the "shape_element" function which not only parses the osm xml data but also cleans the data using the functions discussed above. The general scheme for processing osm files start from creating csv files as output files using the codecs module, then shaping the output, validating this output against a set schema and then writing the output onto the csv files.
+Data were extracted from the OSM file using the functions from the case study exercises from the course. The "meat" of the process happens in the "shape_element" function which not only parses the osm xml data but also cleans the data using the functions discussed above. The general scheme for processing osm files start from creating csv files as output files using the codecs module, then shaping the output, validating this output against a set schema and then writing the output onto the csv files.
 
-#### *The shape_element function*
-
-Parsing and cleaning of xml data occurs in the shape_element function. It extracts values of attributes from an xml element, instead of a whole xml tree  Along with this extraction, the data is updated accordingly and appended to receptacles (lists and dictionaries). 
-
-I encountered problems processing the whole osm file with validation set to True even if I didn't obtain any errors processing the sample file with validation set to True. To figure out what was wrong, I gathered from the course forum that I needed to look for missing fields in the csv file obtained from running the program with validation set to False. However, I found it impossible to find any in the large csv output files. Besides, it was also impossible to load the whole file using a spreadsheet program. Blindly, I resorted to including lines of code to address missing data, though doing this was futile. An example of this is:
-
-     if element.attrib[field] == '':
-         node_attribs[field] = '999999'
-     else:
-         node_attribs[field] = element.attrib[field]
-
-Eventually, I thought about looking at the output csv files from the processing of the whole file with validation on which failed. I took the last line in the resulting (incomplete) csv file, which happen to be nodes_tags.csv, using the csv module and the reader method.
-
-    import csv
-    with open("nodes_tags.csv", "r") as f:
-        lastrow = None
-        for lastrow in csv.reader(f):
-            pass
-        print lastrow
-        
-(Reference: http://stackoverflow.com/questions/20296955/reading-last-row-from-csv-file-python-error)
-
-The result from this code gave me the 'id' of the element I can use to search where the line that causes the error is in the whole osm file:
-
-    import xml.etree.cElementTree as ET
-    
-    def get_element(osm_file, tags=('node', 'way', 'relation')):
-        """Yield element if it is the right type of tag
-        Reference:
-        http://stackoverflow.com/questions/3095434/inserting-newlines-in-xml-file-generated-via-xml-etree-elementtree-in-python
-        """
-        context = ET.iterparse(osm_file, events=('start', 'end'))
-        _, root = next(context)
-        for event, elem in context:
-            if event == 'end' and elem.tag in tags:
-                yield elem
-                root.clear()
-    
-    counter = 0
-    for element in get_element(OSM_FILE):
-        counter += 1
-        if element.tag == 'node':
-            if element.attrib['id'] == '4133425201':
-                print counter
-                break
-                
-     Out: 6338418
-
-This gave me the element number in the osm xml which gives rise to the error. I then generated a smaller osm file using this information, using the same lines of code used to make the sample osm file provided in the course.
-
-    SAMPLE_FILE = "expectederror_file.osm"
-
-    with open(SAMPLE_FILE, 'wb') as output:
-        output.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        output.write('<osm>\n')
-    
-        for i, element in enumerate(get_element(OSM_FILE)):
-            if i > 6338416:
-                output.write(ET.tostring(element, encoding='utf-8'))
-        output.write('</osm>')
-        
-I then processed "expectederror_file.osm" using my code with validation off and found the missing field or empty cell. I then found that the error was because of the value "service area" for attribute 'k', which should have been ignored since it contains a problem character. This then told me that the problem in the code is the cleaning of the 'k' values. The reason was the following lines of code in the shape_element function:
+A problem I encountered in processing the whole osm file with validation set to True even if I didn't obtain any errors processing the sample file with validation. This was because the data that sets the error on is not present in the sample file. Only when I analyzed the output files was I able to figure out what's wrong with my function. In short, the problem is caused by the absence of a line that allows the code to ignore problematic characters for values of the attribute 'k':
 
     try:
         problem_chars.search(tag.attrib['k']).group()
@@ -151,11 +79,11 @@ This would have worked if I included "continue" in the third line of the code.
     except AttributeError:
         ....
 
-I did change my code to use the if/else statement.
+I however changed my code to use the if/else statement but still it needed the "continue" statement for the code to work.
 
 ## Creation SQL Database
 
-Creating the SQL database (atx_osm.db) was done using Python according to the method outlined in the course forum (https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6), using the schema specified in the following site: https://gist.github.com/swwelch/f1144229848b407e0a5d13fcb7fbbd6f. The process was straightfoward. All codes are contained in this notebook: https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/db_creation.ipynb
+Creating the SQL database (atx_osm.db) was done using Python according to the method outlined in the course forum (https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6), using the schema specified in the following site: https://gist.github.com/swwelch/f1144229848b407e0a5d13fcb7fbbd6f. The process was straightfoward. All codes are contained in this notebook: https://github.com/mudspringhiker/wrangle_open_streetmap_data/blob/master/db_creation.ipynb.
     
 ## Querrying the SQL Database
 
@@ -363,8 +291,6 @@ Udacity Data Wrangling Course
 
 About the xml module method .iterparse:
 
-(http://effbot.org/zone/celementtree.htm, 
+(http://effbot.org/zone/celementtree.htm 
 
-http://effbot.org/zone/element-iterparse.htm,
-
-
+http://effbot.org/zone/element-iterparse.htm
