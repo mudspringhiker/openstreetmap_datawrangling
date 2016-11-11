@@ -141,18 +141,8 @@ I then processed "expectederror_file.osm" using my code with validation off and 
     try:
         problem_chars.search(tag.attrib['k']).group()
     except AttributeError:
-       try:
-          lower_colon.search(tag.attrib['k']).group()
-          kvalue = tag.attrib['k'].split(":")
-          nodetags['type'] = kvalue[0]
-          if len(kvalue) == 2:
-              nodetags['key'] = kvalue[1]
-          else:
-              nodetags['key'] = ":".join(kvalue[1:])
-       except AttributeError:
-          nodetags['type'] = default_tag_type
-          nodetags['key'] = tag.attrib['k']
-
+       .....
+       
 This would have worked if I included "continue" in the third line of the code.
 
     try:
@@ -161,23 +151,7 @@ This would have worked if I included "continue" in the third line of the code.
     except AttributeError:
         ....
 
-However, I was instructed by the forum mentor to use if/else statements and use "continue". I did change my code to use the if/else statement:
-
-    if problem_chars.search(tag.attrib['k']) != None:
-        continue
-    else:
-        if lower_colon.search(tag.attrib['k']) != None:
-             kvalue = tag.attrib['k'].split(":")
-             nodetags['type'] = kvalue[0]               
-             if len(kvalue) == 2:                        
-                 nodetags['key'] = kvalue[1]
-             else:
-                 nodetags['key'] = ':'.join(kvalue[1:])
-        else:
-             nodetags['type'] = default_tag_type
-             nodetags['key'] = tag.attrib['k']
-             
-After this, I was able to obtain validated csv files and went on to create the SQL database.
+I did change my code to use the if/else statement.
 
 ## Creation and Querrying of SQL Database
 
@@ -228,7 +202,7 @@ Querrying for list of cities showed that pretty much of all the cities were clea
         (u'Maxwell', 1),
         (u'Smithville', 1)]
 
-Looking at the postcodes, there were three "None" values.
+However, looking at the postcodes, there were three "None" values.
     
     postcode = cur.execute("""SELECT tags.value, COUNT(*) as count
                           FROM (SELECT * FROM nodes_tags
@@ -327,22 +301,7 @@ Output:
      (u'richlv', 50212),
      (u'johnclary_axtbuildings', 48232)]
              
-I explored the use of pandas to look at the list of users:
-
-    contributions = cur.execute("""SELECT e.user, COUNT(*) as num 
-                             FROM (SELECT user FROM nodes UNION ALL SELECT user FROM ways) e 
-                             GROUP BY e.user 
-                             ORDER BY num DESC""").fetchall()
-    import pandas
-    
-    contributions_df = pd.DataFrame(contributions)
-    contributions_df['users'] = contributions_df[0]
-    contributions_df['count'] = contributions_df[1]
-    del contributions_df[0]
-    del contributions_df[1]
-    contributions_df.head(10)
-
-This created a better looking table than the results of the sql query:
+However by using pandas module, a better looking table of the results can be obtained:
 
 ![alt tag](https://raw.githubusercontent.com/mudspringhiker/wrangle_open_streetmap_data/master/pandastable1.png)
 
