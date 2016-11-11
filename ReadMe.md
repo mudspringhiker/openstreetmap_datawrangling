@@ -6,7 +6,7 @@ Austin, TX USA
 
 https://mapzen.com/data/metro-extracts/metro/austin_texas/
 
-This area is more familiar to me at the moment so I chose it. It also meets the project requirements of having at least 50 MB file size uncompressed. Uncompressing the file gave a 1.4 GB osm file. A sample of this file was generated using the code provided in the instructions for the project. The link to this smaller osm file is:
+This area is more familiar to me at the moment so I chose it. It also meets the project requirements of having at least 50 MB file size uncompressed. A sample of this file was generated using the code provided in the instructions for the project:
 
 https://www.dropbox.com/s/084lnztuwgxdgtm/sample.osm?dl=0
 
@@ -23,7 +23,7 @@ Exploration of the sample osm file as well as the whole osm file showed that:
 
 ### Cleaning of Street Names
 
-Using the method described in the case study exercises for the course. However, the result from the audit showed that aside from the fact that some street names are heavily abbreviated, some street names are abbreviated inconsistently. In this project, the "update_name" function introduced in the case study exercises was modified by adding subfunctions and other lines of code, to successfully update the street names. Examples of updates done are:
+Results of the audit of street names using the method described in the case study exercises for the course showed that aside from some street names being heavily abbreviated, some street names are abbreviated inconsistently. In this project, the "update_name" function introduced in the case study exercises was modified by adding subfunctions and other lines of code, to successfully update the street names. Examples of updates done are:
 
     North IH 35 => North Interstate Highway 35
     Calhoun Ln => Calhoun Lane
@@ -215,7 +215,7 @@ Another problem with the data itself is the presence of more than one field name
 
 ## Conclusion
 
-Information from an xml file can be scraped for data by Python through the xml.eTree.ElementTree module. This can be converted to a csv file which can be converted to an sql database (or to a pandas dataframe, which is not shown here, but was explored in another unit of the course). SQL databases can be converted to a pandas dataframe.
+Information from an xml file can be extracted for data by Python through the xml.eTree.ElementTree module. This can be converted to a csv file which can be converted to an sql database (or to a pandas dataframe, which is not shown here, but was explored in another unit of the course). SQL databases can be converted to a pandas dataframe.
 
 Cleaning of data takes a while. Knowledge of the nature of data also is very important so the best decisions on what to do with it can be done.
 
