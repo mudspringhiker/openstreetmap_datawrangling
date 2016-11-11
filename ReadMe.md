@@ -232,6 +232,6 @@ Udacity Data Wrangling Course
 
 About the xml module method .iterparse:
 
-(http://effbot.org/zone/celementtree.htm 
+http://effbot.org/zone/celementtree.htm 
 
 http://effbot.org/zone/element-iterparse.htm
