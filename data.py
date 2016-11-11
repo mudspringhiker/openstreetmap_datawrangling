@@ -93,7 +93,7 @@ def shape_element(element, node_attr_fields=NODE_FIELDS, way_attr_fields=WAY_FIE
                     nodetags['key'] = tag.attrib['k']
             
             if tag.attrib['v'] == '':
-                nodetags['value'] == 'None' # makes sure that if the field is empty, it is field with 'None' (str)
+                nodetags['value'] = 'None' # makes sure that if the field is empty, it is field with 'None' (str)
                 
             else:
                 # cleaning of v attributes values:
@@ -230,6 +230,6 @@ def process_map(file_in, validate):
 if __name__ == '__main__':
     # Note: Validation is ~ 10X slower. For the project consider using a small
     # sample of the map when validating.
-    process_map(SMALL_OSM_FILE, validate=True)
+    process_map(OSM_FILE, validate=True)
 
 
