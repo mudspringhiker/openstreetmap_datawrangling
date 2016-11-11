@@ -6,7 +6,7 @@ Austin, TX USA
 
 https://mapzen.com/data/metro-extracts/metro/austin_texas/
 
-This area is more familiar to me at the moment so I chose it. It also meets the project requirements of having at least 50 MB file size uncompressed. As delineated in class, the data was obtained by downloading the readily available extract above. Uncompressing the file gave a 1.4 GB osm file. A sample of this file was generated using the code provided in the instructions for the project. The link to this smaller osm file is:
+This area is more familiar to me at the moment so I chose it. It also meets the project requirements of having at least 50 MB file size uncompressed. Uncompressing the file gave a 1.4 GB osm file. A sample of this file was generated using the code provided in the instructions for the project. The link to this smaller osm file is:
 
 https://www.dropbox.com/s/084lnztuwgxdgtm/sample.osm?dl=0
 
@@ -37,17 +37,9 @@ The function was able to distinguish between some abbreviations:
 
 However, after the updates, there were still some problems remaining after the clean up, such as certain streets have different names. For example, Ranch Road 620 is also referred to as Farm-to-Market Road 620, US Highway 290 is also Country Road 290. These were not addressed in the project although it could be easily added to the "mapping_street" dictionary used by the function. 
 
-### Cleaning Postcodes
-
-Auditing the postcodes using a regular expression showed that it didn't follow a uniform format. To clean up postcodes, I decided to remove the county codes, but if a total cleaning is needed, a new field for county codes should be created in order to not lose the county codes data. This wasn't done here (however, it might be easily fixable if MongoDB was used--I used SQL). Some examples of updates for postcodes are:
-
-    78704-7205 => 78704
-    Texas => None
-    TX 78613 => 78613
-
 ### The "clean" Function
 
-Instead of using all the functions above individually in the final xml data extraction, particularly in the "shape_element" function, a "clean" function was created and eventually used.
+Instead of using individual functions which were written to fix different problems in the street name, a "clean" function was created and used in the "shape_element" function (discussed below).
 
     def clean(value, tag, mapping_street, expectedcities, mapping_city):
         if is_street_name(tag):
@@ -102,11 +94,7 @@ Querrying for list of cities showed that pretty much of all the cities were clea
         (u'Round Rock', 113),
         (u'Kyle', 64),
         (u'Cedar Park', 43),
-        (u'Pflugerville', 37),
-        (u'Leander', 33),
-        (u'Buda', 26),
-        (u'Georgetown', 17),
-        (u'Dripping Springs', 13), .....
+        (u'Pflugerville', 37), .....
 
 However, looking at the postcodes (querried using a similar code as that used for querrying for cities), there were three "None" values. To figure out what these should be, I querried for the accompanying information with these values. 
 
@@ -178,8 +166,6 @@ The following are some information about the dataset:
     Out[17]:
              [(6356394,)]
              
-This value is the same as the one obtained from the exploration of dataset using xml.etree.cElementTree module of Python (see p3_wrangle_openstreetmap_1.ipynb, High Level Tags).
-
 ### Number of Ways
 
     In [18]: cur.execute("SELECT COUNT(*) FROM ways")
