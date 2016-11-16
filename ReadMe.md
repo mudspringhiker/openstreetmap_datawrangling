@@ -1,6 +1,6 @@
 # OpenStreetMap Data for Austin, TX
 
-This project is a requirement for the Udacity's [Data Wrangling with MongoDB course](https://www.udacity.com/course/data-wrangling-with-mongodb--ud032). After downloading the OSM XML file of a particular area of interest, data are extracted and cleaned and converted to a database. For this project, the database used is SQL using SQLite.
+This project is a requirement for the Udacity's [Data Wrangling with MongoDB course](https://www.udacity.com/course/data-wrangling-with-mongodb--ud032). For more information on OpenStreetMap, go to its [website](https://www.openstreetmap.org/#map=19/30.27482/-97.75237). After downloading the OSM XML file of a particular area of interest, data are extracted and cleaned and converted to a database. For this project, the database used is SQL using SQLite.
 
 ## Map Area
 
